@@ -33,15 +33,14 @@
 
           }
       }
-    stage("Install Jaeger") {
+    #stage("Install Jaeger") {
 
-        sshagent(["${credentials}"]) {
-            sh script: """
+        # sh script: """
 
-                export ANSIBLE_HOST_KEY_CHECKING=False
-                cd /var/lib/jenkins/workspace/jaugaur/docker-jauger
-                ansible-playbook ec2_yum_update_ansible.yml -s -e host_key_checking=False -i ./nodes -v
-                ansible-playbook Jaeger_install_ansible.yml -s -e host_key_checking=False -i ./nodes -v
+                #export ANSIBLE_HOST_KEY_CHECKING=False
+                #cd /var/lib/jenkins/workspace/jaugaur/docker-jauger
+                #ansible-playbook ec2_yum_update_ansible.yml -s -e host_key_checking=False -i ./nodes -v
+                #ansible-playbook Jaeger_install_ansible.yml -s -e host_key_checking=False -i ./nodes -v
 
             """
 
