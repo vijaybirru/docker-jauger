@@ -1,0 +1,67 @@
+- hosts: NODE
+  serial: 1
+  gather_facts: False
+  tasks:
+    - name: install version lock
+      shell: |
+        yum -y install yum-versionlock
+        yum versionlock clear
+
+    - name: Check Docker version
+      shell: |
+        docker --version
+      ignore_errors: yes
+      register: status
+    - name: Install Docker
+      shell: |
+        yum -y remove docker docker-common container-selinux
+        yum -y remove docker-selinux
+        yum -y remove docker-engine
+        yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+        yum install -y yum-utils device-mapper-persistent-data lvm2
+        yum makecache fast
+        yum install -y docker-ce-17.*
+        yum versionlock add docker-ce-17.*
+        rm -rf /local/docker/*
+        # We are making docker home as /local/docker, the same is used in docker.conf file. (Stage 1)
+        mkdir -p /local/docker && chown -R gecloud /local/docker
+      when: not status.stdout | search("Docker version 17.")
+    - name: Stage1-PreRequisite
+      file: path=/etc/systemd/system/docker.service.d state=directory
+    - name: Stage1-Configuring docker daemon to accept request at port 2376
+      template:
+        src: ./configuration/docker.conf
+        dest: /etc/systemd/system/docker.service.d/docker.conf
+      register: stage1
+    - name: Stage2-PreRequisite
+      file: path=/etc/docker state=directory
+    - name: Stage2-Configuring docker daemon to pull images from docker private registry
+      template:
+       src: ./configuration/daemon.json
+       dest: /etc/docker/daemon.json
+      when: DOCKER_REGISTRY is defined
+      register: stage2
+    - name: "Job for cleaning docker dangling images"
+      cron:
+        special_time: "weekly"
+        job: "docker rmi $(docker images -f \"dangling=true\" -q)  >& /dev/null; docker container prune -f  >& /dev/null; docker image prune -f  >& /dev/null"
+
+    - name: Check if docker is active
+      shell: |
+        systemctl is-active docker
+      ignore_errors: yes
+      register: active_status
+    - name: Stage4-(Re)Starting Docker Daemon
+      shell: |
+        export PATH=$PATH:/usr/sbin
+        systemctl daemon-reload
+        systemctl restart docker
+        if [ "$?" -ne "0" ]; then
+            exit 1
+        fi
+        chkconfig docker on
+        if [ "$?" -ne "0" ]; then
+            exit 1
+        fi
+      when: stage1.changed or stage2.changed or active_status.stdout!="active"
+
