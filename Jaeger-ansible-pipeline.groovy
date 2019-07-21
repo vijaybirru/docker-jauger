@@ -39,8 +39,9 @@
             sh script: """
 
                 export ANSIBLE_HOST_KEY_CHECKING=False
-                ansible-playbook ${WORKSPACE}@script/ec2_yum_update_ansible.yml -s -e host_key_checking=False -i ./nodes -v
-                ansible-playbook ${WORKSPACE}@script/Jaeger_install_ansible.yml -s -e host_key_checking=False -i ./nodes -v
+                cd /var/lib/jenkins/workspace/jaugaur/docker-jauger
+                ansible-playbook ec2_yum_update_ansible.yml -s -e host_key_checking=False -i ./nodes -v
+                ansible-playbook Jaeger_install_ansible.yml -s -e host_key_checking=False -i ./nodes -v
 
             """
 
