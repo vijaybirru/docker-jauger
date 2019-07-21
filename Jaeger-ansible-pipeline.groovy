@@ -27,7 +27,8 @@
           sshagent(['Jauger']) {
           sh script: """
               export ANSIBLE_HOST_KEY_CHECKING=False
-              ansible-playbook ${WORKSPACE}@script/docker_install_ansible.yml -s -e host_key_checking=False  -i ./nodes -v
+              cd /var/lib/jenkins/workspace/jaugaur/docker-jauger
+              ansible-playbook docker_install_ansible.yml -s -e host_key_checking=False  -i ./nodes -v
           """
 
           }
