@@ -30,14 +30,14 @@
       file: path=/etc/systemd/system/docker.service.d state=directory
     - name: Stage1-Configuring docker daemon to accept request at port 2376
       template:
-        src: ./configuration/docker.conf
+        src: ./docker.conf
         dest: /etc/systemd/system/docker.service.d/docker.conf
       register: stage1
     - name: Stage2-PreRequisite
       file: path=/etc/docker state=directory
     - name: Stage2-Configuring docker daemon to pull images from docker private registry
       template:
-       src: ./configuration/daemon.json
+       src: ./daemon.json
        dest: /etc/docker/daemon.json
       when: DOCKER_REGISTRY is defined
       register: stage2
