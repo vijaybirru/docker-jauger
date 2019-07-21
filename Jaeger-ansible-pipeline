@@ -19,7 +19,7 @@
       rm -rf nodes
       echo "[NODE]" > nodes
       for m in ${ipAddress}; do
-         echo "\$m ansible_user=gecloud" >> nodes
+         echo "\$m ansible_user=ec2-user" >> nodes
       done
       cat nodes
 
